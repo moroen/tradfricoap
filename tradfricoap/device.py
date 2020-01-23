@@ -292,10 +292,7 @@ class device:
     @property
     def Members(self):
         if len(self._group_members) == 0:
-            # logging.debug("Getting members for device {}".format(self.DeviceID))
-
             if self.device is None:
-                logging.debug("Device {} has no device info".format(self.DeviceID))
                 return None
 
             for id in self.device[constants.attr_group_members][
@@ -320,7 +317,6 @@ def get_devices(groups=False):
     except TypeError:
         return
     except HandshakeError:
-        logging.debug("Can't get devices, connection time out")
         raise
 
     for aDevice in res:
