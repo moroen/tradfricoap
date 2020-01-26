@@ -15,15 +15,22 @@ class ReadTimeoutError(Exception):
 class WriteTimeoutError(Exception):
     pass
 
-_coapCMD = "{}/{}".format(os.path.dirname(os.path.abspath(__file__)), "../bin/coapcmd")
+# _coapCMD = "{}/{}".format(os.path.dirname(os.path.abspath(__file__)), "../bin/coapcmd")
+_coapCMD = "coapcmd"
 
-if not os.path.exists(_coapCMD):
-    raise ApiNotFoundError("coapcmd", "'coapcmd' not found")
 
 def set_debug_level(level):
     pass
 
+def set_coapcmd(cmd):
+    global _coapCMD
+    _coapCMD = cmd
+
 def request(uri, payload=None, method="put"):
+    if not os.path.exists(_coapCMD):
+        raise ApiNotFoundError("coapcmd", "'coapcmd' not found.")
+        return
+
     conf = get_config()
     path = "coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri)
 

@@ -1,4 +1,5 @@
 from .config import get_config
+from . import ApiNotFoundError
 
 def request(uri, payload=None, method="put"):
     CONF = get_config()
@@ -15,10 +16,7 @@ def request(uri, payload=None, method="put"):
                 create_ident,
             )
         except ImportError:
-            print(
-                'Pycoap module not found!\nInstall with "pip3 install -r requirements.txt" or select another api with "python3 tradfricoap.py api"'
-            )
-            exit()
+            raise ApiNotFoundError("pycoap", "Module 'py3coap' not found.")
 
     if CONF["Api"] == "Coapcmd":
         try:
@@ -32,9 +30,6 @@ def request(uri, payload=None, method="put"):
                 create_ident,
             )
         except ImportError:
-            print(
-                'coapcmd  not found!\nInstall with "bash install_coapcmd.sh" or select another api with "python3 tradfricoap.py api"'
-            )
-            exit()
+            raise ApiNotFoundError("coapcmd", "'coapcmd' not found.")
 
     return _request(uri, payload, method)

@@ -27,13 +27,14 @@ if __name__ == "__main__":
     try:
         from tradfricoap.device import get_devices, get_device
         from tradfricoap.gateway import create_ident
+        import tradfricoap.errors as errors
     except ImportError:
         print("Module 'tradfricoap' not found!")
         exit()
 
     except ApiNotFoundError as e:
         if e.api == "pycoap":
-            print('Pycoap module not found!\nInstall with "pip3 install py3config" or select another api with "tradfri api"')
+            print('Py3coap module not found!\nInstall with "pip3 install py3coap" or select another api with "tradfri api"')
         elif e.api == "coapcmd":
             print( 'coapcmd  not found!\nInstall with "bash install_coapcmd.sh" or select another api with "tradfri api"')
         exit()
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     if args.command == "list":
         try:
             devices = get_devices(args.groups)
-        except HandshakeError:
+        except errors.HandshakeError:
             print("Connection timed out")
             exit()
 

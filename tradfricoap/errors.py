@@ -1,4 +1,5 @@
 from .config import get_config
+from . import ApiNotFoundError
 
 _debug = 0
 
@@ -14,7 +15,7 @@ if CONF["Api"] == "Pycoap":
             set_debug_level
         )
     except ImportError:
-        raise
+        raise ApiNotFoundError("py3coap not found")
 
 if CONF["Api"] == "Coapcmd":
     try:
@@ -26,4 +27,4 @@ if CONF["Api"] == "Coapcmd":
             set_debug_level
         )
     except ImportError:
-        raise
+        raise 

@@ -7,7 +7,7 @@ try:
     from py3coap.errors import HandshakeError, UriNotFoundError, WriteTimeoutError, ReadTimeoutError
 
 except ImportError:
-    raise ApiNotFoundError("pycoap", "Module 'pycoap' not found")
+    raise ApiNotFoundError("pycoap", "Module 'py3coap' not found.")
 
 from .config import get_config
 
