@@ -1,95 +1,29 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
 import appdirs
 
-from tradfricoap.cli import get_args
-from tradfricoap.config import get_config, host_config
-from tradfricoap import ApiNotFoundError
-import tradfricoap.cli as cli
+try:
+    from tradfricoap.config import get_config, host_config,ConfigNotFoundError
+    from tradfricoap import ApiNotFoundError
+
+    CONFIGFILE = "{0}/gateway.json".format(appdirs.user_config_dir(appname="tradfri"))
+    CONF = get_config(CONFIGFILE).configuation
+    
+    if CONF["Api"] == "Coapcmd":
+        from tradfricoap.coapcmd_api import set_coapcmd
+
+        set_coapcmd(
+            "coapcmd"
+        )
+
+except ImportError:
+    _globalError = "Module 'tradfricoap' not found"
 
 # from tradfri.config import host_config
 
-CONFIGFILE = "{0}/gateway.json".format(appdirs.user_config_dir(appname="tradfri"))
-conf = get_config(CONFIGFILE)
 
-
+import tradfricoap.cli as cli
 
 if __name__ == "__main__":
-
-    args = cli.get_args()
-
-    if args.command == "api":
-        config = host_config(CONFIGFILE)    
-        config.set_config_item("api", args.API)
-        config.save()
-        exit()
-
-    try:
-        from tradfricoap.device import get_devices, get_device
-        from tradfricoap.gateway import create_ident
-        import tradfricoap.errors as errors
-    except ImportError:
-        print("Module 'tradfricoap' not found!")
-        exit()
-
-    except ApiNotFoundError as e:
-        if e.api == "pycoap":
-            print('Py3coap module not found!\nInstall with "pip3 install py3coap" or select another api with "tradfri api"')
-        elif e.api == "coapcmd":
-            print( 'coapcmd  not found!\nInstall with "bash install_coapcmd.sh" or select another api with "tradfri api"')
-        exit()
-
-
-    if args.command == "list":
-        try:
-            devices = get_devices(args.groups)
-        except errors.HandshakeError:
-            print("Connection timed out")
-            exit()
-
-        except ApiNotFoundError as e:
-            print(e.message)
-            exit()
-
-        if devices is None:
-            logging.critical("Unable to get list of devices")
-        else:
-            lights = []
-            plugs = []
-            blinds = []
-            groups = []
-            others = []
-
-            for dev in devices:
-                if dev.Type == "Light":
-                    lights.append(dev.Description)
-                elif dev.Type == "Plug":
-                    plugs.append(dev.Description)
-                elif dev.Type == "Blind":
-                    blinds.append(dev.Description)
-                elif dev.Type == "Group":
-                    groups.append(dev.Description)
-                else:
-                    others.append(dev.Description)
-
-            if len(lights):
-                print("Lights:")
-                print("\n".join(lights))
-
-            if len(plugs):
-                print("\nPlugs:")
-                print("\n".join(plugs))
-
-            if len(blinds):
-                print("\nBlinds:")
-                print("\n".join(blinds))
-
-            if len(groups):
-                print("\nGroups:")
-                print("\n".join(groups))
-
-            if len(others):
-                print("\nOthers:")
-                print("\n".join(others))
-    else:
-        print("Unknown command '{}'".format(args.command))
+    cli.process_args()
+    

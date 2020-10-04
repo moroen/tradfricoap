@@ -2,14 +2,17 @@ import json
 from . import constants
 from . import colors
 from .request import request
-from .errors import HandshakeError, UriNotFoundError, ReadTimeoutError,WriteTimeoutError
+from .gateway import close_connection
+from .errors import HandshakeError, UriNotFoundError, ReadTimeoutError,WriteTimeoutError, DeviceNotFoundError
 
 
 _transition_time = 10
 
+
 def set_transition_time(tt):
     global _transition_time
     _transition_time = int(tt)
+
 
 class device:
     lightControl = None
@@ -38,6 +41,24 @@ class device:
             except UriNotFoundError:
                 self.__init__(id, is_group=True)
 
+            self.process_result(res)
+
+            
+        else:
+            uri = "{}/{}".format(constants.uri_groups, id)
+            try:
+                res = request(uri)
+            except HandshakeError:
+                raise
+            except UriNotFoundError:
+                # Illeagal deviceID
+                self._is_group = False
+                raise DeviceNotFoundError(id)
+            
+            self.process_result(res)
+
+    def process_result(self, res):
+        if not self._is_group:
             try:
                 self.device = json.loads(res)
                 self.device_info = self.device[constants.attrDeviceInfo]
@@ -54,22 +75,13 @@ class device:
                         self.blindControl = self.device[constants.attrBlindControl][0]
                     except KeyError:
                         pass
-        else:
-            uri = "{}/{}".format(constants.uri_groups, id)
-            try:
-                res = request(uri)
-            except HandshakeError:
-                raise
-            except UriNotFoundError:
-                # Illeagal deviceID
-                self._is_group = False
-
+        elif self._is_group:
             try:
                 self.device = json.loads(res)
                 self.device_info = self.device
                 self._is_group = True
             except TypeError:
-                return
+                return            
 
     def Update(self):
         self.__init__(self._id, self._is_group)
@@ -109,6 +121,10 @@ class device:
         return None
 
     @property
+    def Raw(self):
+        return self.device
+
+    @property
     def State(self):
         if self.lightControl:
             return self.lightControl[constants.attrLightState]
@@ -146,12 +162,19 @@ class device:
             uri = "{}/{}".format(constants.uri_groups, self._id)
             payload = '{{ "{0}": {1} }}'.format(constants.attrLightState, state)
 
-        request(uri, payload)
+        
+        res = request(uri, payload)
+        self.process_result(res)        
+        close_connection()
 
     @property
     def Level(self):
         if self.lightControl:
-            return self.lightControl[constants.attrLightDimmer]
+            if not constants.attrLightDimmer in self.lightControl:
+                # Device have no dimmer control
+                return self.State
+            else:
+                return self.lightControl[constants.attrLightDimmer]
         elif self.blindControl:
             return self.blindControl[constants.attrBlindPosition]
         elif self._is_group:
@@ -205,12 +228,14 @@ class device:
                     constants.attrBlindControl, constants.attrBlindPosition, level
                 )
 
-        request(uri, payload)
-        self.Update()
+        res = request(uri, payload)
+        self.process_result(res)
+        close_connection()
+        # self.Update()
 
     @property
     def Color_space(self):
-        from tradfricoap.device_info import deviceInfo
+        from .device_info import deviceInfo
 
         if self._is_group:
             color_spaces = []
@@ -229,7 +254,7 @@ class device:
             # Use defined deviceInfo if exists
             model = self.device_info[constants.attrDeviceInfo_Model]
             if model in deviceInfo:
-                return (deviceInfo[model]["Color_space"])
+                return deviceInfo[model]["Color_space"]
 
             if self.lightControl is None:
                 return None
@@ -265,6 +290,7 @@ class device:
             _transition_time,
         )
         request(uri, payload)
+        close_connection()
 
     @property
     def Color_level(self):
@@ -302,6 +328,14 @@ class device:
 
         return self._group_members
 
+    @property
+    def Battery_level(self):
+        if self.device_info is not None:
+            if constants.attrBatteryLevel in self.device_info:
+                return self.device_info[constants.attrBatteryLevel]
+
+        return None
+
 
 def get_device(id, is_group=False):
     dev = device(id, is_group)
@@ -309,7 +343,7 @@ def get_device(id, is_group=False):
 
 
 def get_devices(groups=False):
-    devices = []
+    devices = {}
 
     uri = constants.uriDevices
     try:
@@ -320,17 +354,17 @@ def get_devices(groups=False):
         raise
 
     for aDevice in res:
-        devices.append(device(aDevice))
+        devices[aDevice] = device(aDevice)
 
-    if not groups:
-        return devices
+    if groups:
+        uri = constants.uri_groups
+        try:
+            res = json.loads(request(uri))
+        except TypeError:
+            return
 
-    uri = constants.uri_groups
-    try:
-        res = json.loads(request(uri))
-    except TypeError:
-        return
-
-    for aGroup in res:
-        devices.append(device(aGroup, is_group=True))
+        for aGroup in res:
+            devices[aGroup] = device(aGroup, is_group=True)
+    
+    # close_connection()
     return devices

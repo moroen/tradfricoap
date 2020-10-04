@@ -1,8 +1,12 @@
 import logging, os, json
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 global_conf = None
+
+class ConfigNotFoundError(Exception):
+    pass
 
 class host_config(object):
     _confObj = {}
@@ -70,7 +74,7 @@ class host_config(object):
 def get_config(configfile = None):
     global global_conf
     if global_conf is None:
-        logger.info("Loading config")
+        logger.info("Loading config {}".format(configfile))
         global_conf = host_config(configfile)
-
-    return global_conf.configuation
+        
+    return global_conf

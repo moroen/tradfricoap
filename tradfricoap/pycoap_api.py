@@ -3,7 +3,7 @@ import logging
 from . import ApiNotFoundError
 
 try: 
-    from py3coap import setDebugLevel, Request, __version__, POST, PUT, GET
+    from py3coap import setDebugLevel, Request, __version__, POST, PUT, GET, CloseConnection
     from py3coap.errors import HandshakeError, UriNotFoundError, WriteTimeoutError, ReadTimeoutError
 
 except ImportError:
@@ -11,6 +11,9 @@ except ImportError:
 
 from .config import get_config
 
+def close_connection():
+    CloseConnection()    
+    
 def set_debug_level(level):
     global _debug
     _debug = level
@@ -18,23 +21,28 @@ def set_debug_level(level):
     if level == 1:
         logging.basicConfig(level=logging.DEBUG)
 
+
 def request(uri, payload=None, method="put"):
-    conf = get_config()
+    conf = get_config().configuation
 
     if conf["Gateway"] is None:
         logging.critical("Gateway not specified")
         return
 
     if payload == None:
-        return Request(
+
+        # print ("Calling with method GET for uri: {}".format(uri))
+
+        res = Request(
             uri="coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri),
             ident=conf["Identity"],
             key=conf["Passkey"],
         )
-            
+
     else:
         method = POST if method=="post" else PUT
-        return Request(
+        # print ("Calling with method {} for uri: {} with payload: {}".format(method, uri, payload))
+        res = Request(
             uri="coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri),
             payload=payload,
             method=method,
@@ -42,7 +50,11 @@ def request(uri, payload=None, method="put"):
             key=conf["Passkey"],
         )
 
-def create_ident(ip, key, configFile=None):
+    # print("Returning: {}\n".format(res))
+    return res
+
+
+def create_ident(ip, key, conf_obj):
     import uuid
     from .config import host_config, get_config
     from json import loads, dumps
@@ -53,9 +65,9 @@ def create_ident(ip, key, configFile=None):
     uri = "coaps://{}:{}/{}".format(ip, 5684, "15011/9063")
 
     result = Request(
-            uri, payload=payload, method=POST, ident="Client_identity", key=key
-        )
-    
+        uri, payload=payload, method=POST, ident="Client_identity", key=key
+    )
+
     logging.debug("Create ident result: {}".format(result))
 
     if result is None:
@@ -63,7 +75,6 @@ def create_ident(ip, key, configFile=None):
         return None
 
     res = loads(result)
-    conf_obj = host_config(configFile)
-
+    
     conf_obj.set_config_items(Gateway=ip, Identity=identity, Passkey=res["9091"])
     conf_obj.save()

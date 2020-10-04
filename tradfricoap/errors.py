@@ -3,7 +3,7 @@ from . import ApiNotFoundError
 
 _debug = 0
 
-CONF = get_config()
+CONF = get_config().configuation
 
 if CONF["Api"] == "Pycoap":
     try:
@@ -12,10 +12,10 @@ if CONF["Api"] == "Pycoap":
             UriNotFoundError,
             ReadTimeoutError,
             WriteTimeoutError,
-            set_debug_level
+            set_debug_level,
         )
     except ImportError:
-        raise ApiNotFoundError("py3coap not found")
+        raise ApiNotFoundError("py3coap", "py3coap not found")
 
 if CONF["Api"] == "Coapcmd":
     try:
@@ -24,7 +24,18 @@ if CONF["Api"] == "Coapcmd":
             UriNotFoundError,
             ReadTimeoutError,
             WriteTimeoutError,
-            set_debug_level
+            set_debug_level,
         )
     except ImportError:
-        raise 
+        raise
+
+
+
+class DeviceNotFoundError(Exception):
+    def __init__(self, deviceid):
+        self.DeviceID = deviceid
+
+class MethodNotSupported(Exception):
+    def __init__(self, api, message):
+        self.message = message
+        self.api = apis

@@ -1,8 +1,9 @@
 from .config import get_config
 from . import ApiNotFoundError
 
+
 def request(uri, payload=None, method="put"):
-    CONF = get_config()
+    CONF = get_config().configuation
 
     if CONF["Api"] == "Pycoap":
         try:
