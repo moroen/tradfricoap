@@ -17,7 +17,8 @@ def list_devices(groups=False):
         exit()
 
     except ApiNotFoundError as e:
-        print(e.message)
+        # print(e.message)
+        raise
         exit()
 
     if devices is None:

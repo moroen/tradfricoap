@@ -4,12 +4,12 @@ from tradfricoap.errors import HandshakeError
 import json
 
 def set_config(args):
-    print(args)
     conf_object = get_config()
     
 
     if args.config == "api":
-        pass
+        conf_object.set_config_item("api", args.API)
+        conf_object.save()
 
     elif args.config == "gw":
         from tradfricoap.gateway import create_ident

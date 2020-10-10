@@ -1,11 +1,16 @@
 import argparse
 
-def get_args():
+_parser = None
 
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="command")
+def default_parsers_args():
 
-    parser.add_argument("--debug", action="store_true")
+    global _parser 
+
+    if _parser is None:
+        _parser = argparse.ArgumentParser()    
+        _parser.add_argument("--debug", action="store_true")
+
+    subparsers = _parser.add_subparsers(dest="command")
 
 
     parser_list = subparsers.add_parser("list")
@@ -14,7 +19,7 @@ def get_args():
     subparsers.add_parser("on").add_argument("ID")
     subparsers.add_parser("off").add_argument("ID")
 
-    subparsers.add_parser("test")
+    subparsers.add_parser("version")
 
 
     parser_config = subparsers.add_parser("config")
@@ -27,16 +32,24 @@ def get_args():
     parser_config_api = parser_config_subparser.add_parser("api")
     parser_config_api.add_argument("API", choices=["pycoap", "coapcmd"])
     
-    return parser.parse_args()
+    return subparsers
 
-def process_args():
-    args = get_args()
+def get_args():
+    
+    global _parser
 
+    if _parser is None:
+        default_parsers_args()
+
+    return _parser.parse_args()
+
+def process_args(args=None):
+
+    if args is None:
+        args = get_args()
+            
     if args.command == "api":
-        config = host_config(CONFIGFILE)    
-        config.set_config_item("api", args.API)
-        config.save()
-        exit()
+        print("Command 'api' is deprecated. Did you mean 'config api'")
 
     try:
         from tradfricoap.device import get_devices, get_device
@@ -46,7 +59,7 @@ def process_args():
         print("Module 'tradfricoap' not found!")
         exit()
 
-    except ApiNotFoundError as e:
+    except errors.ApiNotFoundError as e:
         if e.api == "pycoap":
             print('Py3coap module not found!\nInstall with "pip3 install py3coap" or select another api with "tradfri api"')
         elif e.api == "coapcmd":
@@ -68,7 +81,15 @@ def process_args():
     elif args.command == "off":
         from tradfricoap.cli.devices import set_state
         set_state(args.ID, 0)
-    
+
+    elif args.command == "version":
+        from tradfricoap.version import get_version_info
+        import pprint
+
+        info = get_version_info()
+
+        print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
+
 
     else:
-        print("Unknown command '{}'".format(args.command))
+        return args

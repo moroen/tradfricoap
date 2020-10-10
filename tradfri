@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import appdirs
+import appdirs, argparse
 
 try:
     from tradfricoap.config import get_config, host_config,ConfigNotFoundError
@@ -24,6 +24,21 @@ except ImportError:
 
 import tradfricoap.cli as cli
 
+
 if __name__ == "__main__":
-    cli.process_args()
+    #subargs = cli.default_parsers_args()
+
+    # subargs.add_parser("version")
+    # args = cli.get_args()
+
+    try:
+        cli.process_args()
+    except ApiNotFoundError as e:
+        print("Error: {}".format(e.message))
+
+    #if args.command == "version":
+    #    print("overrided version")
+    #else:
+    #    cli.process_args(args)   
+
     
