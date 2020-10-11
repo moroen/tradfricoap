@@ -32,8 +32,12 @@ steps:
     python setup.py sdist
   displayName: 'sdist'
 
-- task: PublishPipelineArtifact@0
-  inputs:
-    artifactName: 'dist'
-    targetPath: 'dist'
-  displayName: 'Publish artifacts'
+- task: CopyFiles@2  
+  inputs:    
+    targetFolder: $(Build.ArtifactStagingDirectory)
+
+- task: PublishBuildArtifacts@1  
+  inputs:    
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'                  
+    ArtifactName: 'dist'    
+    publishLocation: 'Container'
