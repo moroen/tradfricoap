@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="tradfricoap",
-    version="0.0.4",
+    version="0.0.5",
     url="https://github.com/moroen/tradfricoap.git",
     author="moroen",
     author_email="moroen@gmail.com",
