@@ -31,3 +31,9 @@ steps:
 - script: |
     python setup.py sdist
   displayName: 'sdist'
+
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'source'
+    targetPath: 'dist'
+  displayName: 'Publish artifacts'
