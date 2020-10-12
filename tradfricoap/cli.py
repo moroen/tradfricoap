@@ -3,7 +3,7 @@ import json
 
 
 from .config import get_config
-from .errors import HandshakeError
+from .errors import HandshakeError, DeviceNotFoundError
 from .device import get_devices, get_device
 from .version import get_version_info
 
@@ -21,15 +21,23 @@ def default_parsers_args():
 
     subparsers = _parser.add_subparsers(dest="command")
 
-
     parser_list = subparsers.add_parser("list")
     parser_list.add_argument("--groups", action="store_true")
 
     subparsers.add_parser("on").add_argument("ID")
     subparsers.add_parser("off").add_argument("ID")
 
-    subparsers.add_parser("version")
+    level = subparsers.add_parser("level")
+    level.add_argument("ID")
+    level.add_argument("level")
+    
+    raw = subparsers.add_parser("raw")
+    raw.add_argument("ID")
+    raw.add_argument("--plain", action="store_true")
+    raw.add_argument("--indent", default=2)
 
+    subparsers.add_parser("version")
+    
 
     parser_config = subparsers.add_parser("config")
     parser_config_subparser = parser_config.add_subparsers(dest="config")
@@ -60,6 +68,13 @@ def process_args(args=None):
     if args.command == "api":
         print("Command 'api' is deprecated. Did you mean 'config api'")
 
+    if "ID" in args:
+        try:
+            device = get_device(args.ID)
+        except DeviceNotFoundError:
+            print("Device with id '{}' not found".format(args.ID))
+            exit()
+
     if args.command == "config":
         set_config(args)
 
@@ -67,21 +82,36 @@ def process_args(args=None):
         list_devices(groups=True)
 
     elif args.command == "on":
-        set_state(args.ID, 1)
+        device.State = 1
 
     elif args.command == "off":
-        set_state(args.ID, 0)
+        device.State = 0
 
     elif args.command == "version":
         info = get_version_info()
         print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
 
+    elif args.command == "level":
+        if validate_range(int(args.level)):
+            device.Level = int(args.level)
+        else:
+            show_error("Level outside permitted range (0 - 254)")
+
+    elif args.command == "raw":
+        if args.plain:
+            print(device.device)
+        else:
+            
+            print(json.dumps(device.device, indent=int(args.indent)))
 
     else:
         return args
 
+def show_error(msg):
+    print("Error: {}".format(msg))
 
-
+def validate_range(value, min=0, max=254):
+    return min <= value <= max
 
 def set_config(args):
     conf_object = get_config()
@@ -101,14 +131,6 @@ def set_config(args):
 
     else:
         print(json.dumps(conf_object.configuation, indent=2))
-
-
-
-def set_state(id, state):
-    device = get_device(id)
-    if state not in [0,1]:
-        state = 1
-    device.State = state
 
 
 def list_devices(groups=False):
