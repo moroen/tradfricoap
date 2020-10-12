@@ -22,7 +22,7 @@ except ImportError:
 # from tradfri.config import host_config
 
 
-import tradfricoap.cli as cli
+from tradfricoap import cli
 
 
 if __name__ == "__main__":
