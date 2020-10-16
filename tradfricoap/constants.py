@@ -27,3 +27,7 @@ attrBlindPosition = "5536"
 # Groups
 attr_group_info = "15002"
 attr_group_members = "9018"
+
+# Gatewat
+attr_gateway_root = "15011"
+attr_gateway_reboot = "9030"

@@ -23,6 +23,7 @@ except ImportError:
 
 
 from tradfricoap import cli
+from tradfricoap.errors import set_debug_level
 
 
 if __name__ == "__main__":
@@ -30,6 +31,8 @@ if __name__ == "__main__":
 
     # subargs.add_parser("version")
     # args = cli.get_args()
+
+    set_debug_level(1)
 
     try:
         cli.process_args()

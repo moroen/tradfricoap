@@ -38,6 +38,8 @@ def default_parsers_args():
 
     subparsers.add_parser("version")
     
+    subparsers.add_parser("reboot")
+    
 
     parser_config = subparsers.add_parser("config")
     parser_config_subparser = parser_config.add_subparsers(dest="config")
@@ -96,6 +98,10 @@ def process_args(args=None):
             device.Level = int(args.level)
         else:
             show_error("Level outside permitted range (0 - 254)")
+
+    elif args.command == "reboot":
+        from .gateway import reboot
+        reboot()
 
     elif args.command == "raw":
         if args.plain:

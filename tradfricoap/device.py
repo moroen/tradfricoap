@@ -345,7 +345,8 @@ def get_device(id, is_group=False):
 def get_devices(groups=False):
     devices = {}
 
-    uri = constants.uriDevices
+    uri = constants.uriDevices    
+
     try:
         res = json.loads(request(uri))
     except TypeError:
