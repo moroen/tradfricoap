@@ -2,10 +2,11 @@
 
 import appdirs, argparse
 
+from tradfricoap import ApiNotFoundError
+
 try:
     from tradfricoap.config import get_config, host_config,ConfigNotFoundError
-    from tradfricoap import ApiNotFoundError
-
+  
     CONFIGFILE = "{0}/gateway.json".format(appdirs.user_config_dir(appname="tradfri"))
     CONF = get_config(CONFIGFILE).configuation
     
@@ -15,30 +16,35 @@ try:
         set_coapcmd(
             "coapcmd"
         )
-
 except ImportError:
     _globalError = "Module 'tradfricoap' not found"
+
+except (ModuleNotFoundError, ApiNotFoundError) as e:
+    _globalError = e.message
 
 # from tradfri.config import host_config
 
 
-from tradfricoap import cli
-from tradfricoap.errors import set_debug_level
-
 
 if __name__ == "__main__":
+
+    if 1: #try: 
+        from tradfricoap import cli
+        # from tradfricoap.errors import set_debug_level
+
+        # set_debug_level(1)
+        cli.process_args()
+
+    # except ApiNotFoundError as e:
+    #    print("Error: {}".format(e.message))
+
+
     #subargs = cli.default_parsers_args()
 
     # subargs.add_parser("version")
     # args = cli.get_args()
 
-    set_debug_level(1)
-
-    try:
-        cli.process_args()
-    except ApiNotFoundError as e:
-        print("Error: {}".format(e.message))
-
+    
     #if args.command == "version":
     #    print("overrided version")
     #else:

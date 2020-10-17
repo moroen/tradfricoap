@@ -7,7 +7,7 @@ try:
     from py3coap.errors import HandshakeError, UriNotFoundError, WriteTimeoutError, ReadTimeoutError
 
 except (ImportError, ModuleNotFoundError):
-    raise ApiNotFoundError("pycoap", "Module 'py3coap' not found.")
+    ApiNotFoundError("pycoap", "Module 'py3coap' not found.")
 
 
 

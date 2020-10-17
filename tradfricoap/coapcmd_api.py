@@ -109,7 +109,7 @@ def get_version():
     try:
         coapcmd_version = "({}) {}".format(_coapCMD, subprocess.run([_coapCMD, "version",], stdout=subprocess.PIPE).stdout.decode("utf-8"))
     except FileNotFoundError:
-        coapcmd_version = "Not found. Looking for {}\n".format(_coapCMD)
+        coapcmd_version = "Not found. (Looking for {})\n".format(_coapCMD)
 
     return coapcmd_version
 

@@ -1,13 +1,17 @@
 import argparse
 import json
 
-
-from .config import get_config
-from .errors import HandshakeError, DeviceNotFoundError
-from .device import get_devices, get_device
-from .version import get_version_info
-
 from . import ApiNotFoundError
+
+_global_error = None
+
+try:
+    from .config import get_config
+    from .errors import HandshakeError, DeviceNotFoundError
+    from .device import get_devices, get_device
+    from .version import get_version_info
+except ApiNotFoundError as e:
+    _global_error = e.message
 
 _parser = None
 
@@ -69,50 +73,59 @@ def process_args(args=None):
             
     if args.command == "api":
         print("Command 'api' is deprecated. Did you mean 'config api'")
-
-    if "ID" in args:
-        try:
-            device = get_device(args.ID)
-        except DeviceNotFoundError:
-            print("Device with id '{}' not found".format(args.ID))
-            exit()
+        return
 
     if args.command == "config":
         set_config(args)
+        return
 
-    elif args.command == "list":
-        list_devices(groups=True)
+    if _global_error is not None:
+        print(_global_error)
+        return
 
-    elif args.command == "on":
-        device.State = 1
+    try:
+        if "ID" in args:
+            try:
+                device = get_device(args.ID)
+            except DeviceNotFoundError:
+                print("Device with id '{}' not found".format(args.ID))
+                exit()
 
-    elif args.command == "off":
-        device.State = 0
+        if args.command == "list":
+            list_devices(groups=True)
 
-    elif args.command == "version":
-        info = get_version_info()
-        print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
+        elif args.command == "on":
+            device.State = 1
 
-    elif args.command == "level":
-        if validate_range(int(args.level)):
-            device.Level = int(args.level)
+        elif args.command == "off":
+            device.State = 0
+
+        elif args.command == "version":
+            info = get_version_info()
+            print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
+
+        elif args.command == "level":
+            if validate_range(int(args.level)):
+                device.Level = int(args.level)
+            else:
+                show_error("Level outside permitted range (0 - 254)")
+
+        elif args.command == "reboot":
+            from .gateway import reboot
+            reboot()
+
+        elif args.command == "raw":
+            if args.plain:
+                print(device.device)
+            else:
+                
+                print(json.dumps(device.device, indent=int(args.indent)))
+
         else:
-            show_error("Level outside permitted range (0 - 254)")
-
-    elif args.command == "reboot":
-        from .gateway import reboot
-        reboot()
-
-    elif args.command == "raw":
-        if args.plain:
-            print(device.device)
-        else:
-            
-            print(json.dumps(device.device, indent=int(args.indent)))
-
-    else:
-        return args
-
+            return args
+    except ApiNotFoundError as e:
+        print(e.message)
+        
 def show_error(msg):
     print("Error: {}".format(msg))
 
@@ -120,6 +133,7 @@ def validate_range(value, min=0, max=254):
     return min <= value <= max
 
 def set_config(args):
+    from .config import get_config
     conf_object = get_config()
     
 
