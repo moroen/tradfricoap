@@ -9,7 +9,6 @@ try:
     from .config import get_config
     from .errors import HandshakeError, DeviceNotFoundError
     from .device import get_devices, get_device
-    from .version import get_version_info
 except ApiNotFoundError as e:
     _global_error = e.message
 
@@ -75,8 +74,14 @@ def process_args(args=None):
         print("Command 'api' is deprecated. Did you mean 'config api'")
         return
 
-    if args.command == "config":
+    elif args.command == "config":
         set_config(args)
+        return
+
+    elif args.command == "version":
+        from .version import get_version_info
+        info = get_version_info()
+        print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
         return
 
     if _global_error is not None:
@@ -99,10 +104,6 @@ def process_args(args=None):
 
         elif args.command == "off":
             device.State = 0
-
-        elif args.command == "version":
-            info = get_version_info()
-            print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
 
         elif args.command == "level":
             if validate_range(int(args.level)):
