@@ -5,7 +5,7 @@ _debug = 0
 
 CONF = get_config().configuation
 
-if CONF["Api"] == "Pycoap":
+if CONF["Api"] == "Py3coap":
     try:
         from .pycoap_api import (
             HandshakeError,

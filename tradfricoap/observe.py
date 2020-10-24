@@ -4,7 +4,7 @@ from .errors import MethodNotSupported
 
 CONF = get_config().configuation
 
-if CONF["Api"] == "Pycoap":
+if CONF["Api"] == "Py3coap":
     from py3coap import Observe, ObserveStop
 
 if CONF["Api"] == "Coapcmd":

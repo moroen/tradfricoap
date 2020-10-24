@@ -4,7 +4,7 @@ from .constants import attr_gateway_reboot, attr_gateway_root
 
 CONF = get_config().configuation
 
-if CONF["Api"] == "Pycoap":
+if CONF["Api"] == "Py3coap":
     from .pycoap_api import create_ident
     from .pycoap_api import close_connection
 

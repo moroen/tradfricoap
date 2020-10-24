@@ -28,9 +28,13 @@ class host_config(object):
             Passkey=None,
             Transition_time=10,
             Verbosity=0,
-            Api="Pycoap"
+            Api="Py3coap"
         )
         self.load()
+
+        if self._confObj["Api"] == "Pycoap":
+            self.set_config_item("Api", "Py3coap")
+            self.save()
 
     def load(self):
 

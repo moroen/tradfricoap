@@ -52,7 +52,7 @@ def default_parsers_args():
     parser_config_gateway.add_argument("KEY")
 
     parser_config_api = parser_config_subparser.add_parser("api")
-    parser_config_api.add_argument("API", choices=["pycoap", "coapcmd"])
+    parser_config_api.add_argument("API", choices=["py3coap", "coapcmd"])
     
     return subparsers
 
