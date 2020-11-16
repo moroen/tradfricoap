@@ -124,8 +124,12 @@ def process_args(args=None):
 
         else:
             return args
-    except ApiNotFoundError as e:
+    except (ApiNotFoundError) as e:
         print(e.message)
+
+    except (HandshakeError):
+        print("Connection timed out.")
+    
         
 def show_error(msg):
     print("Error: {}".format(msg))

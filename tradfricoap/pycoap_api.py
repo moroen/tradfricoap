@@ -9,8 +9,6 @@ try:
 except (ImportError, ModuleNotFoundError):
     ApiNotFoundError("pycoap", "Module 'py3coap' not found.")
 
-
-
 from .config import get_config
 
 def close_connection():

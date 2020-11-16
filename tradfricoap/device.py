@@ -64,6 +64,8 @@ class device:
                 self.device_info = self.device[constants.attrDeviceInfo]
             except TypeError:
                 return
+            except json.JSONDecodeError:
+                print("Unexpected result in device.process_result: {}".format(res))
 
             try:
                 self.lightControl = self.device[constants.attrLightControl][0]
@@ -82,6 +84,8 @@ class device:
                 self._is_group = True
             except TypeError:
                 return            
+            except json.JSONDecodeError:
+                print("Unexpected result in device.process_result_is_group: {}".format(res))
 
     def Update(self):
         self.__init__(self._id, self._is_group)
@@ -348,11 +352,14 @@ def get_devices(groups=False):
     uri = constants.uriDevices    
 
     try:
-        res = json.loads(request(uri))
+        res = request(uri)
+        res = json.loads(res)
     except TypeError:
         return
     except HandshakeError:
         raise
+    except json.JSONDecodeError:
+        print("Unexpected result in get_devices: {}".format(res))
 
     for aDevice in res:
         devices[aDevice] = device(aDevice)
@@ -360,9 +367,12 @@ def get_devices(groups=False):
     if groups:
         uri = constants.uri_groups
         try:
-            res = json.loads(request(uri))
+            res = request(uri)
+            res = json.loads(res)
         except TypeError:
             return
+        except json.JSONDecodeError:
+            print("Unexpected result in get_devices_groups: {}".format(res))
 
         for aGroup in res:
             devices[aGroup] = device(aGroup, is_group=True)
