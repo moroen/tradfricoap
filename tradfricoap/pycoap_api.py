@@ -2,18 +2,34 @@ import logging
 
 from . import ApiNotFoundError
 
-try: 
-    from py3coap import setDebugLevel, Request, __version__, POST, PUT, GET, CloseConnection
-    from py3coap.errors import HandshakeError, UriNotFoundError, WriteTimeoutError, ReadTimeoutError
+try:
+    from py3coap import (
+        setDebugLevel,
+        Request,
+        __version__,
+        POST,
+        PUT,
+        GET,
+        CloseConnection,
+    )
+    from py3coap.errors import (
+        HandshakeError,
+        UriNotFoundError,
+        WriteTimeoutError,
+        ReadTimeoutError,
+        MethodNotAllowedError,
+    )
 
 except (ImportError, ModuleNotFoundError):
     ApiNotFoundError("pycoap", "Module 'py3coap' not found.")
 
 from .config import get_config
 
+
 def close_connection():
-    CloseConnection()    
-    
+    CloseConnection()
+
+
 def set_debug_level(level):
     global _debug
     _debug = level
@@ -40,7 +56,7 @@ def request(uri, payload=None, method="put"):
         )
 
     else:
-        method = POST if method=="post" else PUT
+        method = POST if method == "post" else PUT
         # print ("Calling with method {} for uri: {} with payload: {}".format(method, uri, payload))
         res = Request(
             uri="coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri),
@@ -75,6 +91,6 @@ def create_ident(ip, key, conf_obj):
         return None
 
     res = loads(result)
-    
+
     conf_obj.set_config_items(Gateway=ip, Identity=identity, Passkey=res["9091"])
     conf_obj.save()

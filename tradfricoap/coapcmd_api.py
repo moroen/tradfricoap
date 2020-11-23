@@ -1,4 +1,7 @@
-import logging, subprocess, os, json
+import logging
+import subprocess
+import os
+import json
 from shutil import which
 
 from .config import get_config
@@ -8,8 +11,10 @@ from . import ApiNotFoundError
 class HandshakeError(Exception):
     pass
 
+
 class UriNotFoundError(Exception):
     pass
+
 
 class ReadTimeoutError(Exception):
     pass
@@ -18,24 +23,46 @@ class ReadTimeoutError(Exception):
 class WriteTimeoutError(Exception):
     pass
 
-# _coapCMD = "{}/{}".format(os.path.dirname(os.path.abspath(__file__)), "../bin/coapcmd")
+
+class MethodNotAllowedError(Exception):
+    pass
+
+
 _coapCMD = "coapcmd"
+
 
 def close_connection():
     pass
 
+
 def set_debug_level(level):
     pass
+
 
 def set_coapcmd(cmd):
     global _coapCMD
     _coapCMD = cmd
 
 
+def raise_error(result):
+    if result["Status"] == "HandshakeError":
+        raise HandshakeError
+    if result["Status"] == "UriNotFound":
+        raise UriNotFoundError
+    if result["Status"] == "ReadTimeoutError":
+        raise ReadTimeoutError
+    if result["Status"] == "WriteTimeoutError":
+        raise WriteTimeoutError
+    if result["Status"] == "MethodNotAllowed":
+        raise MethodNotAllowedError
+    return None
+
+
 def request(uri, payload=None, method="put"):
     if which(_coapCMD) is None:
-        raise ApiNotFoundError("coapcmd", "'coapcmd' not found! Looking for {}".format(_coapCMD))
-        return
+        raise ApiNotFoundError(
+            "coapcmd", "'coapcmd' not found! Looking for {}".format(_coapCMD)
+        )
 
     conf = get_config().configuation
     path = "coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri)
@@ -44,78 +71,74 @@ def request(uri, payload=None, method="put"):
         logging.critical("Gateway not specified")
         return
 
-    if payload == None:
+    if payload is None:
         try:
             result = subprocess.run(
-                    [
-                        _coapCMD,
-                        "get",
-                        "--ident",
-                        conf["Identity"],
-                        "--key",
-                        conf["Passkey"],
-                        path,
-                    ],
-                    stdout=subprocess.PIPE,
-                ).stdout.decode("utf-8")
-            
+                [
+                    _coapCMD,
+                    "get",
+                    "--ident",
+                    conf["Identity"],
+                    "--key",
+                    conf["Passkey"],
+                    path,
+                ],
+                stdout=subprocess.PIPE,
+            ).stdout.decode("utf-8")
+
             result = json.loads(result)
 
             if result["Status"] == "ok":
                 return result["Result"]
-            if result["Status"] == "HandshakeError":
-                raise HandshakeError
-            if result["Status"] == "UriNotFound":
-                raise UriNotFoundError
-            if result["Status"] == "ReadTimeoutError":
-                raise ReadTimeoutError
-            if result["Status"] == "WriteTimeoutError":
-                raise WriteTimeoutError
+            else:
+                raise_error(result)
             return None
-        
+
         except json.JSONDecodeError:
             print("Unexpected result from gateway in coapcmd_get: {}".format(result))
 
     else:
         try:
             result = subprocess.run(
-                    [
-                        _coapCMD,
-                        method,
-                        "--ident",
-                        conf["Identity"],
-                        "--key",
-                        conf["Passkey"],
-                        path,
-                        payload,
-                    ],
-                    stdout=subprocess.PIPE,
-                ).stdout.decode("utf-8")
-            
+                [
+                    _coapCMD,
+                    method,
+                    "--ident",
+                    conf["Identity"],
+                    "--key",
+                    conf["Passkey"],
+                    path,
+                    payload,
+                ],
+                stdout=subprocess.PIPE,
+            ).stdout.decode("utf-8")
+
             result = json.loads(result)
             if result["Status"] == "ok":
-                # Workaround until coapcmd retuns the result from a put command
-                res = request(uri, None)
-                return res
-            if result["Status"] == "HandshakeError":
-                raise HandshakeError
-            if result["Status"] == "UriNotFound":
-                raise UriNotFoundError
-            if result["Status"] == "ReadTimeoutError":
-                raise ReadTimeoutError
-            if result["Status"] == "WriteTimeoutError":
-                raise WriteTimeoutError
-            return None
+                return result["Result"]
+            else:
+                raise_error(result)
         except json.JSONDecodeError:
             print("Unexpected result from gateway in coapcmd_put: {}".format(result))
 
+
 def get_version():
     try:
-        coapcmd_version = "({}) {}".format(_coapCMD, subprocess.run([_coapCMD, "version",], stdout=subprocess.PIPE).stdout.decode("utf-8"))
+        coapcmd_version = "({}) {}".format(
+            _coapCMD,
+            subprocess.run(
+                [
+                    _coapCMD,
+                    "version",
+                ],
+                stdout=subprocess.PIPE,
+            ).stdout.decode("utf-8"),
+        )
     except FileNotFoundError:
         coapcmd_version = "Not found (Looking for {}).\n".format(_coapCMD)
 
     return coapcmd_version
+
 
 def create_ident(ip, key, conf_obj):
     import uuid
@@ -164,4 +187,3 @@ def create_ident(ip, key, conf_obj):
     if result["Status"] == "WriteTimeoutError":
         raise WriteTimeoutError
     return None
-    

@@ -6,20 +6,25 @@ from . import ApiNotFoundError
 _global_error = None
 
 try:
-    from .config import get_config
-    from .errors import HandshakeError, DeviceNotFoundError
+    from .errors import (
+        HandshakeError,
+        DeviceNotFoundError,
+        UriNotFoundError,
+        MethodNotAllowedError,
+    )
     from .device import get_devices, get_device
 except ApiNotFoundError as e:
     _global_error = e.message
 
 _parser = None
 
+
 def default_parsers_args():
 
-    global _parser 
+    global _parser
 
     if _parser is None:
-        _parser = argparse.ArgumentParser()    
+        _parser = argparse.ArgumentParser()
         _parser.add_argument("--debug", action="store_true")
 
     subparsers = _parser.add_subparsers(dest="command")
@@ -33,16 +38,27 @@ def default_parsers_args():
     level = subparsers.add_parser("level")
     level.add_argument("ID")
     level.add_argument("level")
-    
+
     raw = subparsers.add_parser("raw")
     raw.add_argument("ID")
     raw.add_argument("--plain", action="store_true")
     raw.add_argument("--indent", default=2)
 
     subparsers.add_parser("version")
-    
+
     subparsers.add_parser("reboot")
-    
+
+    # uri
+    get = subparsers.add_parser("get")
+    get.add_argument("uri")
+
+    put = subparsers.add_parser("put")
+    put.add_argument("uri")
+    put.add_argument("payload")
+
+    post = subparsers.add_parser("post")
+    post.add_argument("uri")
+    post.add_argument("payload")
 
     parser_config = subparsers.add_parser("config")
     parser_config_subparser = parser_config.add_subparsers(dest="config")
@@ -53,11 +69,12 @@ def default_parsers_args():
 
     parser_config_api = parser_config_subparser.add_parser("api")
     parser_config_api.add_argument("API", choices=["py3coap", "coapcmd"])
-    
+
     return subparsers
 
+
 def get_args():
-    
+
     global _parser
 
     if _parser is None:
@@ -65,11 +82,12 @@ def get_args():
 
     return _parser.parse_args()
 
+
 def process_args(args=None):
 
     if args is None:
         args = get_args()
-            
+
     if args.command == "api":
         print("Command 'api' is deprecated. Did you mean 'config api'")
         return
@@ -80,13 +98,39 @@ def process_args(args=None):
 
     elif args.command == "version":
         from .version import get_version_info
+
         info = get_version_info()
-        print('\n'.join("{}: {}".format(k, v) for k, v in info.items()), end='')
+        print("\n".join("{}: {}".format(k, v) for k, v in info.items()), end="")
         return
 
     if _global_error is not None:
         print(_global_error)
         return
+
+    try:
+        if args.command == "get":
+            from .request import request
+
+            res = request(args.uri)
+            print(res)
+
+        if args.command == "put":
+            from .request import request
+
+            res = request(args.uri, payload=args.payload, method="put")
+            print(res)
+
+        if args.command == "post":
+            from .request import request
+
+            res = request(args.uri, payload=args.payload, method="post")
+            print(res)
+    except UriNotFoundError:
+        print("Error: {} not found!".format(args.uri))
+        exit()
+    except MethodNotAllowedError:
+        print("Error: Method {} not supported for {}".format(args.command, args.uri))
+        exit()
 
     try:
         if "ID" in args:
@@ -113,13 +157,14 @@ def process_args(args=None):
 
         elif args.command == "reboot":
             from .gateway import reboot
+
             reboot()
 
         elif args.command == "raw":
             if args.plain:
                 print(device.device)
             else:
-                
+
                 print(json.dumps(device.device, indent=int(args.indent)))
 
         else:
@@ -129,18 +174,20 @@ def process_args(args=None):
 
     except (HandshakeError):
         print("Connection timed out.")
-    
-        
+
+
 def show_error(msg):
     print("Error: {}".format(msg))
+
 
 def validate_range(value, min=0, max=254):
     return min <= value <= max
 
+
 def set_config(args):
     from .config import get_config
+
     conf_object = get_config()
-    
 
     if args.config == "api":
         conf_object.set_config_item("api", args.API)
@@ -165,10 +212,8 @@ def list_devices(groups=False):
         print("Connection timed out")
         exit()
 
-    except ApiNotFoundError as e:
-        # print(e.message)
+    except ApiNotFoundError:
         raise
-        exit()
 
     if devices is None:
         print("Unable to get list of devices")
@@ -182,7 +227,7 @@ def list_devices(groups=False):
 
         devices = sorted(devices.items())
 
-        for key, dev in devices:
+        for _, dev in devices:
             if dev.Type == "Light":
                 ikea_devices.append(dev.Description)
             elif dev.Type == "Plug":

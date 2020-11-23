@@ -5,8 +5,10 @@ logger.setLevel(logging.INFO)
 
 global_conf = None
 
+
 class ConfigNotFoundError(Exception):
     pass
+
 
 class host_config(object):
     _confObj = {}
@@ -14,21 +16,21 @@ class host_config(object):
     _configFile = None
     _configDir = None
 
-    def __init__(self, configFile = None):
+    def __init__(self, configFile=None):
 
         if configFile == None:
             logging.critical("Configfile not defined...")
             exit()
         else:
             self._configFile = configFile
-        
+
         self._confObj.update(
             Gateway=None,
             Identity=None,
             Passkey=None,
             Transition_time=10,
             Verbosity=0,
-            Api="Py3coap"
+            Api="Py3coap",
         )
         self.load()
 
@@ -75,10 +77,10 @@ class host_config(object):
         return self._confObj["Gateway"]
 
 
-def get_config(configfile = None):
+def get_config(configfile=None):
     global global_conf
     if global_conf is None:
         logger.info("Loading config {}".format(configfile))
         global_conf = host_config(configfile)
-        
+
     return global_conf

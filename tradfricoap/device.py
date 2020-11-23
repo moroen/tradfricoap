@@ -3,7 +3,13 @@ from . import constants
 from . import colors
 from .request import request
 from .gateway import close_connection
-from .errors import HandshakeError, UriNotFoundError, ReadTimeoutError,WriteTimeoutError, DeviceNotFoundError
+from .errors import (
+    HandshakeError,
+    UriNotFoundError,
+    ReadTimeoutError,
+    WriteTimeoutError,
+    DeviceNotFoundError,
+)
 
 
 _transition_time = 10
@@ -43,7 +49,6 @@ class device:
 
             self.process_result(res)
 
-            
         else:
             uri = "{}/{}".format(constants.uri_groups, id)
             try:
@@ -54,7 +59,7 @@ class device:
                 # Illeagal deviceID
                 self._is_group = False
                 raise DeviceNotFoundError(id)
-            
+
             self.process_result(res)
 
     def process_result(self, res):
@@ -83,9 +88,13 @@ class device:
                 self.device_info = self.device
                 self._is_group = True
             except TypeError:
-                return            
+                return
             except json.JSONDecodeError:
-                print("Unexpected result in device.process_result_is_group: {}".format(res))
+                print(
+                    "Unexpected result in device.process_result_is_group: {}".format(
+                        res
+                    )
+                )
 
     def Update(self):
         self.__init__(self._id, self._is_group)
@@ -166,9 +175,8 @@ class device:
             uri = "{}/{}".format(constants.uri_groups, self._id)
             payload = '{{ "{0}": {1} }}'.format(constants.attrLightState, state)
 
-        
         res = request(uri, payload)
-        self.process_result(res)        
+        self.process_result(res)
         close_connection()
 
     @property
@@ -217,14 +225,16 @@ class device:
         else:
             if self.lightControl is not None:
                 uri = "{}/{}".format(constants.uriDevices, self._id)
-                payload = '{{ "{0}": [{{ "{5}": {6}, "{1}": {2}, "{3}": {4} }}] }}'.format(
-                    constants.attrLightControl,
-                    constants.attrLightDimmer,
-                    level,
-                    constants.attrTransitionTime,
-                    _transition_time,
-                    constants.attrLightState,
-                    state,
+                payload = (
+                    '{{ "{0}": [{{ "{5}": {6}, "{1}": {2}, "{3}": {4} }}] }}'.format(
+                        constants.attrLightControl,
+                        constants.attrLightDimmer,
+                        level,
+                        constants.attrTransitionTime,
+                        _transition_time,
+                        constants.attrLightState,
+                        state,
+                    )
                 )
             elif self.blindControl is not None:
                 uri = "{}/{}".format(constants.uriDevices, self._id)
@@ -349,7 +359,7 @@ def get_device(id, is_group=False):
 def get_devices(groups=False):
     devices = {}
 
-    uri = constants.uriDevices    
+    uri = constants.uriDevices
 
     try:
         res = request(uri)
@@ -376,6 +386,6 @@ def get_devices(groups=False):
 
         for aGroup in res:
             devices[aGroup] = device(aGroup, is_group=True)
-    
+
     # close_connection()
     return devices

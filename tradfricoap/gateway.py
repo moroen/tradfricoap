@@ -16,5 +16,3 @@ if CONF["Api"] == "Coapcmd":
 def reboot():
     uri = "{}/{}".format(attr_gateway_root, attr_gateway_reboot)
     return request(uri, payload="1", method="post")
-    
-

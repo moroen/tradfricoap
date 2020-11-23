@@ -12,6 +12,7 @@ if CONF["Api"] == "Py3coap":
             UriNotFoundError,
             ReadTimeoutError,
             WriteTimeoutError,
+            MethodNotAllowedError,
             set_debug_level,
         )
     except ImportError:
@@ -24,18 +25,13 @@ if CONF["Api"] == "Coapcmd":
             UriNotFoundError,
             ReadTimeoutError,
             WriteTimeoutError,
+            MethodNotAllowedError,
             set_debug_level,
         )
     except ImportError:
         raise
 
 
-
 class DeviceNotFoundError(Exception):
     def __init__(self, deviceid):
         self.DeviceID = deviceid
-
-class MethodNotSupported(Exception):
-    def __init__(self, api, message):
-        self.message = message
-        self.api = apis
