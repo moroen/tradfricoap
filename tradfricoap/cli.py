@@ -39,6 +39,10 @@ def default_parsers_args():
     level.add_argument("ID")
     level.add_argument("level")
 
+    name = subparsers.add_parser("name")
+    name.add_argument("ID")
+    name.add_argument("name")
+
     raw = subparsers.add_parser("raw")
     raw.add_argument("ID")
     raw.add_argument("--plain", action="store_true")
@@ -154,6 +158,10 @@ def process_args(args=None):
                 device.Level = int(args.level)
             else:
                 show_error("Level outside permitted range (0 - 254)")
+
+        elif args.command == "name":
+            device.Name = args.name
+            print(device.Description)
 
         elif args.command == "reboot":
             from .gateway import reboot

@@ -35,7 +35,7 @@ class device:
 
         res = None
 
-        if is_group == True:
+        if is_group:
             self._is_group = True
 
         if not self._is_group:
@@ -117,6 +117,17 @@ class device:
     def Name(self):
         return self.device[constants.attrName]
 
+    @Name.setter
+    def Name(self, name):
+        uri = "{}/{}".format(constants.uriDevices, self._id)
+        payload = '{{ "{0}": "{1}" }}'.format(
+            constants.attrName,
+            name,
+        )
+
+        res = request(uri, payload, "put")
+        self.process_result(res)
+
     @property
     def Type(self):
         if self.lightControl is not None:
@@ -182,7 +193,7 @@ class device:
     @property
     def Level(self):
         if self.lightControl:
-            if not constants.attrLightDimmer in self.lightControl:
+            if constants.attrLightDimmer not in self.lightControl:
                 # Device have no dimmer control
                 return self.State
             else:
