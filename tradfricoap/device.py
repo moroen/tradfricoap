@@ -71,7 +71,7 @@ class device:
                 return
             except json.JSONDecodeError:
                 print("Unexpected result in device.process_result: {}".format(res))
-
+                return
             try:
                 self.lightControl = self.device[constants.attrLightControl][0]
             except KeyError:
@@ -95,6 +95,7 @@ class device:
                         res
                     )
                 )
+                return
 
     def Update(self):
         self.__init__(self._id, self._is_group)
@@ -368,6 +369,7 @@ def get_device(id, is_group=False):
 
 
 def get_devices(groups=False):
+    from time import sleep
     devices = {}
 
     uri = constants.uriDevices
@@ -381,9 +383,15 @@ def get_devices(groups=False):
         raise
     except json.JSONDecodeError:
         print("Unexpected result in get_devices: {}".format(res))
+        return None
 
+    # i = 0
     for aDevice in res:
+        # print("Getting info for device: {} Interation: {}".format(aDevice, i))
         devices[aDevice] = device(aDevice)
+        # print("Sleeping")
+        # sleep(0.5)
+        # i = i + 1
 
     if groups:
         uri = constants.uri_groups
@@ -394,6 +402,7 @@ def get_devices(groups=False):
             return
         except json.JSONDecodeError:
             print("Unexpected result in get_devices_groups: {}".format(res))
+            return None
 
         for aGroup in res:
             devices[aGroup] = device(aGroup, is_group=True)
