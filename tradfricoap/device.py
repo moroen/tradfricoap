@@ -370,6 +370,7 @@ def get_device(id, is_group=False):
 
 def get_devices(groups=False):
     from time import sleep
+
     devices = {}
 
     uri = constants.uriDevices
@@ -379,7 +380,7 @@ def get_devices(groups=False):
         res = json.loads(res)
     except TypeError:
         return
-    except HandshakeError:
+    except (HandshakeError, ReadTimeoutError, WriteTimeoutError):
         raise
     except json.JSONDecodeError:
         print("Unexpected result in get_devices: {}".format(res))

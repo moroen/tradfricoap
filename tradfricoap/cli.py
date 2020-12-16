@@ -11,6 +11,8 @@ try:
         DeviceNotFoundError,
         UriNotFoundError,
         MethodNotAllowedError,
+        ReadTimeoutError,
+        WriteTimeoutError,
     )
     from .device import get_devices, get_device
 except ApiNotFoundError as e:
@@ -218,6 +220,10 @@ def list_devices(groups=False):
         devices = get_devices(groups)
     except HandshakeError:
         print("Connection timed out")
+        exit()
+
+    except ReadTimeoutError:
+        print("COAP Read timed out")
         exit()
 
     except ApiNotFoundError:
