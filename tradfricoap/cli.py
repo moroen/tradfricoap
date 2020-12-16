@@ -204,7 +204,11 @@ def set_config(args):
         conf_object.save()
 
     elif args.config == "gw":
-        from tradfricoap.gateway import create_ident
+        try:
+            from tradfricoap.gateway import create_ident
+        except ModuleNotFoundError:
+            # Locally installed
+            from .gateway import create_ident
 
         try:
             create_ident(args.IP, args.KEY, conf_object)
