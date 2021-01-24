@@ -66,6 +66,10 @@ def default_parsers_args():
     post.add_argument("uri")
     post.add_argument("payload")
 
+    # Server
+    server = subparsers.add_parser("server")
+
+    # Config
     parser_config = subparsers.add_parser("config")
     parser_config_subparser = parser_config.add_subparsers(dest="config")
 
@@ -112,6 +116,10 @@ def process_args(args=None):
     if _global_error is not None:
         print(_global_error)
         return
+
+    if args.command == "server":
+        from tradfricoap.server import run_server
+        run_server()
 
     try:
         if args.command == "get":
@@ -218,10 +226,11 @@ def set_config(args):
     else:
         print(json.dumps(conf_object.configuation, indent=2))
 
-
 def list_devices(groups=False):
     try:
-        devices = get_devices(groups)
+        from .device import get_sorted_devices
+        ikea_devices, plugs, blinds, groups, others, batteries = get_sorted_devices(groups)    
+
     except HandshakeError:
         print("Connection timed out")
         exit()
@@ -233,59 +242,34 @@ def list_devices(groups=False):
     except ApiNotFoundError:
         raise
 
-    if devices is None:
-        print("Unable to get list of devices")
-    else:
-        ikea_devices = []
-        plugs = []
-        blinds = []
-        groups = []
-        batteries = []
-        others = []
+    if len(ikea_devices):
+        print("Lights:")
+        for dev in ikea_devices:
+            print("{}".format(dev.Description))
 
-        devices = sorted(devices.items())
+    if len(plugs):
+        print("\nPlugs:")
+        for dev in plugs:
+            print("{}".format(dev.Description))
 
-        for _, dev in devices:
-            if dev.Type == "Light":
-                ikea_devices.append(dev.Description)
-            elif dev.Type == "Plug":
-                plugs.append(dev.Description)
-            elif dev.Type == "Blind":
-                blinds.append(dev.Description)
-            elif dev.Type == "Group":
-                groups.append(dev.Description)
-            else:
-                others.append(dev.Description)
+    if len(blinds):
+        print("\nBlinds:")
+        for dev in blinds:
+            print("{}".format(dev.Description))
 
-            if dev.Battery_level is not None:
-                batteries.append(
-                    "{}: {} - {}".format(dev.DeviceID, dev.Name, dev.Battery_level)
-                )
+    if len(groups):
+        print("\nGroups:")
+        for dev in groups:
+            print("{}".format(dev.Description))
 
-        if len(ikea_devices):
-            print("Lights:")
-            print("\n".join(ikea_devices))
+    if len(batteries):
+        print("\nBatteries:")
+        for dev in batteries:
+            print("{}".format(dev.Description))
 
-        if len(plugs):
-            plugs.sort()
-            print("\nPlugs:")
-            print("\n".join(plugs))
+    if len(others):
+        print("\nOther:")
+        for dev in others:
+            print("{}".format(dev.Description))
 
-        if len(blinds):
-            blinds.sort()
-            print("\nBlinds:")
-            print("\n".join(blinds))
-
-        if len(groups):
-            groups.sort()
-            print("\nGroups:")
-            print("\n".join(groups))
-
-        if len(others):
-            others.sort()
-            print("\nOthers:")
-            print("\n".join(others))
-
-        if len(batteries):
-            print("\nBatteries:")
-            print("\n".join(batteries))
+    
