@@ -68,8 +68,8 @@ def request(uri, payload=None, method="put"):
     path = "coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri)
 
     if conf["Gateway"] is None:
-        logging.critical("Gateway not specified")
-        return
+        from .errors import GatewayNotSpecified
+        raise GatewayNotSpecified
 
     if payload is None:
         try:

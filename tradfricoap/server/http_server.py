@@ -22,12 +22,7 @@ class request_handler(BaseHTTPRequestHandler):
         Data = {"Verb": "GET", "URL": self.path}
 
         reload(server)
-
         page = server.handle_request(Data)
-
-        print(page.status)
-        print(page.response)
-
         self._set_response(page.status)
 
         if page.response is not None:

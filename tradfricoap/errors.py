@@ -35,3 +35,6 @@ if CONF["Api"] == "Coapcmd":
 class DeviceNotFoundError(Exception):
     def __init__(self, deviceid):
         self.DeviceID = deviceid
+
+class GatewayNotSpecified(Exception):
+    pass

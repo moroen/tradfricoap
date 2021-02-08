@@ -1,5 +1,5 @@
-from ..device import get_sorted_devices
-from ..errors import HandshakeError
+from ..device import get_sorted_devices, get_devices
+from ..errors import HandshakeError, GatewayNotSpecified
 
 from json import dumps
 
@@ -62,35 +62,42 @@ def DumpHTTPResponseToConsole(httpDict):
 def index_get():
     data = {}
     try:
-        lights, plugs, blinds, groups, others, batteries = get_sorted_devices(True)
+        # lights, plugs, blinds, groups, others, batteries = get_sorted_devices(True)
+        
+        devices = get_devices(True)
+        devices = sorted(devices.items())
+
         data["Command"] = "/devices"
         data["Status"] = 200
-        data["Devices"] = {}
+        data["Devices"] = []
 
-        data["Devices"]["Lights"] = []
-        data["Devices"]["Plugs"] = []
-        data["Devices"]["Blinds"] = []
-        data["Devices"]["Groups"] = []
-        data["Devices"]["Batteries"] = []
-        data["Devices"]["Others"] = []
+        for _, a in devices:
+            data["Devices"].append(a.Dictionary)
 
-        for a in lights:
-            data["Devices"]["Lights"].append(a.Dictionary)
+        # data["Devices"]["Lights"] = []
+        # data["Devices"]["Plugs"] = []
+        # data["Devices"]["Blinds"] = []
+        # data["Devices"]["Groups"] = []
+        # data["Devices"]["Batteries"] = []
+        # data["Devices"]["Others"] = []
 
-        for a in plugs:
-            data["Devices"]["Plugs"].append(a.Dictionary)
+        # for a in lights:
+        #     data["Devices"]["Lights"].append(a.Dictionary)
 
-        for a in blinds:
-            data["Devices"]["Blinds"].append(a.Dictionary)
+        # for a in plugs:
+        #     data["Devices"]["Plugs"].append(a.Dictionary)
 
-        for a in groups:
-            data["Devices"]["Groups"].append(a.Dictionary)
+        # for a in blinds:
+        #     data["Devices"]["Blinds"].append(a.Dictionary)
 
-        for a in batteries:
-            data["Devices"]["Batteries"].append(a.Dictionary)
+        # for a in groups:
+        #     data["Devices"]["Groups"].append(a.Dictionary)
 
-        for a in others:
-            data["Devices"]["Others"].append(a.Dictionary)
+        # for a in batteries:
+        #     data["Devices"]["Batteries"].append(a.Dictionary)
+
+        # for a in others:
+        #     data["Devices"]["Others"].append(a.Dictionary)
 
         data = dumps(data)     
 
@@ -105,13 +112,16 @@ def handle_request(Data):
     verb = Data.get("Verb")
     url = Data.get("URL")
 
-    if verb is not None:
-        if maps[verb].get(url) is not None:
-            return maps[verb][url]()
+    try:
+        if verb is not None:
+            if maps[verb].get(url) is not None:
+                return maps[verb][url]()
+            else:
+                print("Not found")
+                return request_respons(status=404, response=dumps({"Command": url, "Status": 404}))
         else:
-            print("Not found")
-            return request_respons(status=404, response=dumps({"Command": url, "Status": 404}))
-    else:
-        print("Unknown verb {}".format(verb))
+            print("Unknown verb {}".format(verb))
+    except GatewayNotSpecified:
+        return request_respons(status=701, response=dumps({"Command": url, "Status": 701, "Error": "Gateway config not set"}))
 
     return None

@@ -113,7 +113,8 @@ class device:
 
     @property
     def Dictionary(self):
-        return {"DeviceID": self.DeviceID, "DeviceType": self.Type, "Name": self.Name, "State": self.State}
+        battery = self.Battery_level
+        return {"DeviceID": self.DeviceID, "DeviceType": self.Type, "Name": self.Name, "State": self.State, "Battery": battery if battery is not None else "N/A"}
 
     @property
     def DeviceID(self):
@@ -148,7 +149,7 @@ class device:
         if self._is_group:
             return "Group"
 
-        return None
+        return "Other"
 
     @property
     def Raw(self):

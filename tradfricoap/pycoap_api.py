@@ -42,8 +42,8 @@ def request(uri, payload=None, method="put"):
     conf = get_config().configuation
 
     if conf["Gateway"] is None:
-        logging.critical("Gateway not specified")
-        return
+        from .errors import GatewayNotSpecified
+        raise GatewayNotSpecified
 
     if payload == None:
 

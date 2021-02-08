@@ -13,6 +13,7 @@ try:
         MethodNotAllowedError,
         ReadTimeoutError,
         WriteTimeoutError,
+        GatewayNotSpecified,
     )
     from .device import get_devices, get_device
 except ApiNotFoundError as e:
@@ -145,6 +146,10 @@ def process_args(args=None):
     except MethodNotAllowedError:
         print("Error: Method {} not supported for {}".format(args.command, args.uri))
         exit()
+    except GatewayNotSpecified:
+        print("Error: Gateway not specified!")
+        exit()
+
 
     try:
         if "ID" in args:
@@ -192,7 +197,10 @@ def process_args(args=None):
 
     except (HandshakeError):
         print("Connection timed out.")
-
+    
+    except GatewayNotSpecified:
+        print("Error: Gateway not specified!")
+        exit()
 
 def show_error(msg):
     print("Error: {}".format(msg))
