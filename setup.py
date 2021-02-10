@@ -15,7 +15,7 @@ setup(
     description="Controlling IKEA-Tradfri",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=["tradfricoap"],
+    packages=["tradfricoap", "tradfricoap/server"],
     include_package_data=True,
     setup_requires=[],
     install_requires=["py3coap", "appdirs"],
