@@ -3,14 +3,15 @@ import logging
 from importlib import reload
 
 import tradfricoap.server.request_handler as server
-
+import json
+from urllib.parse import parse_qs, parse_qsl
 
 class request_handler(BaseHTTPRequestHandler):
     Data = {}
 
-    def _set_response(self, response_code):
+    def _set_response(self, response_code, content_type):
         self.send_response(response_code)
-        self.send_header("Content-type", "text/json; charset=utf-8")
+        self.send_header("Content-type", content_type)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
@@ -23,7 +24,7 @@ class request_handler(BaseHTTPRequestHandler):
 
         reload(server)
         page = server.handle_request(Data)
-        self._set_response(page.status)
+        self._set_response(page.status, page.content_type)
 
         if page.response is not None:
             self.wfile.write(page.response)
@@ -31,19 +32,23 @@ class request_handler(BaseHTTPRequestHandler):
             self.wfile.write("".encode("utf-8"))
 
     def do_POST(self):
-        content_length = int(
-            self.headers["Content-Length"]
-        )  # <--- Gets the size of data
-        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
         logging.info(
-            "POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-            str(self.path),
-            str(self.headers),
-            post_data.decode("utf-8"),
+            "POST request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers)
         )
 
-        self._set_response()
-        self.wfile.write("POST request for {}".format(self.path).encode("utf-8"))
+        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+
+        Data = {"Verb": "POST", "URL": self.path, "Data": post_data}
+
+        reload(server)
+        page = server.handle_request(Data)
+        self._set_response(page.status, page.content_type)
+
+        if page.response is not None:
+            self.wfile.write(page.response)
+        else:
+            self.wfile.write("".encode("utf-8"))
 
 
 def run_server(server_class=HTTPServer, handler_class=request_handler, port=8085):

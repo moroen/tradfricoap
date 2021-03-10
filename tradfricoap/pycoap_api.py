@@ -89,8 +89,10 @@ def create_ident(ip, key, conf_obj):
     if result is None:
         logging.critical("Create_ident: No data from gateway")
         return None
-
+    
     res = loads(result)
 
     conf_obj.set_config_items(Gateway=ip, Identity=identity, Passkey=res["9091"])
     conf_obj.save()
+
+    return res
