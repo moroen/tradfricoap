@@ -6,6 +6,7 @@ import tradfricoap.server.request_handler as server
 import json
 from urllib.parse import parse_qs, parse_qsl
 
+
 class request_handler(BaseHTTPRequestHandler):
     Data = {}
 
@@ -36,8 +37,10 @@ class request_handler(BaseHTTPRequestHandler):
             "POST request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers)
         )
 
-        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        content_length = int(
+            self.headers["Content-Length"]
+        )  # <--- Gets the size of data
+        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
 
         Data = {"Verb": "POST", "URL": self.path, "Data": post_data}
 
