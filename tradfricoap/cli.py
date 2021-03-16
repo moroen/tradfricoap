@@ -1,5 +1,6 @@
 import argparse
 import json
+from os import close
 
 from . import ApiNotFoundError
 
@@ -54,6 +55,8 @@ def default_parsers_args():
     subparsers.add_parser("version")
 
     subparsers.add_parser("reboot")
+
+    subparsers.add_parser("test")
 
     # uri
     get = subparsers.add_parser("get")
@@ -114,6 +117,9 @@ def process_args(args=None):
         print("\n".join("{}: {}".format(k, v) for k, v in info.items()), end="")
         return
 
+    elif args.command == "test":
+        print("Do test")
+        
     if _global_error is not None:
         print(_global_error)
         return

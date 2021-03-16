@@ -98,10 +98,9 @@ def setup_post(request):
     
     try:
         response = create_ident(data["tradfri-ip"], data["tradfri-key"], _config)
-
-        print(response)
-
+        
         if response.get("9091") is not None or response.get("Status") == "ok":
+            _config = get_config()
             return request_response(
                 response=dumps({"Command": "/setup", "Status": 201}),
                 status=201,
