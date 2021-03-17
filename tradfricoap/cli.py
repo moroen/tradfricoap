@@ -52,7 +52,8 @@ def default_parsers_args():
     raw.add_argument("--plain", action="store_true")
     raw.add_argument("--indent", default=2)
 
-    subparsers.add_parser("version")
+    version_parser = subparsers.add_parser("version")
+    version_parser.add_argument("-s", "--short", action="store_true")
 
     subparsers.add_parser("reboot")
 
@@ -114,7 +115,12 @@ def process_args(args=None):
         from .version import get_version_info
 
         info = get_version_info()
-        print("\n".join("{}: {}".format(k, v) for k, v in info.items()), end="")
+
+        if args.short:
+            print(info["Tradfricoap"])
+        else:
+            print("\n".join("{}: {}".format(k, v) for k, v in info.items()), end="")
+    
         return
 
     elif args.command == "test":
