@@ -21,12 +21,12 @@ def DumpHTTPResponseToConsole(httpDict):
 
 
 def handle_request(Data=None):
-    DumpHTTPResponseToConsole(Data)
+    # DumpHTTPResponseToConsole(Data)
 
     verb = Data.get("Verb")
     url = Data.get("URL")
 
-    print("{}: {}".format(verb, url))
+    # print("{}: {}".format(verb, url))
 
     try:
         if verb is not None:
