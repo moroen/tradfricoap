@@ -8,14 +8,14 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="tradfricoap",
-    version="0.0.17",
+    version="0.1.0",
     url="https://github.com/moroen/tradfricoap.git",
     author="moroen",
     author_email="moroen@gmail.com",
     description="Controlling IKEA-Tradfri",
     long_description=long_description,
     long_description_content_type='text/markdown',
-    packages=["tradfricoap"],
+    packages=["tradfricoap", "tradfricoap/server"],
     include_package_data=True,
     setup_requires=[],
     install_requires=["py3coap", "appdirs"],

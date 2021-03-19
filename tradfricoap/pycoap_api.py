@@ -42,8 +42,8 @@ def request(uri, payload=None, method="put"):
     conf = get_config().configuation
 
     if conf["Gateway"] is None:
-        logging.critical("Gateway not specified")
-        return
+        from .errors import GatewayNotSpecified
+        raise GatewayNotSpecified
 
     if payload == None:
 
@@ -70,12 +70,14 @@ def request(uri, payload=None, method="put"):
     return res
 
 
-def create_ident(ip, key, conf_obj):
+def create_ident(ip, key, conf_obj=None):
     import uuid
     from .config import host_config, get_config
     from json import loads, dumps
 
     identity = uuid.uuid4().hex
+
+    conf_object = get_config()
 
     payload = '{{"{}":"{}"}}'.format(9090, identity)
     uri = "coaps://{}:{}/{}".format(ip, 5684, "15011/9063")
@@ -89,8 +91,12 @@ def create_ident(ip, key, conf_obj):
     if result is None:
         logging.critical("Create_ident: No data from gateway")
         return None
-
+    
     res = loads(result)
 
-    conf_obj.set_config_items(Gateway=ip, Identity=identity, Passkey=res["9091"])
-    conf_obj.save()
+    conf_object.set_config_items(Gateway=ip, Identity=identity, Passkey=res["9091"])
+    conf_object.save()
+
+    close_connection()
+
+    return res

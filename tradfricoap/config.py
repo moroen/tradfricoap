@@ -82,5 +82,5 @@ def get_config(configfile=None):
     if global_conf is None:
         logger.info("Loading config {}".format(configfile))
         global_conf = host_config(configfile)
-
+    
     return global_conf

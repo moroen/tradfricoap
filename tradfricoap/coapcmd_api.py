@@ -68,8 +68,8 @@ def request(uri, payload=None, method="put"):
     path = "coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri)
 
     if conf["Gateway"] is None:
-        logging.critical("Gateway not specified")
-        return
+        from .errors import GatewayNotSpecified
+        raise GatewayNotSpecified
 
     if payload is None:
         try:
@@ -167,8 +167,6 @@ def create_ident(ip, key, conf_obj):
     )
     logging.debug("Create ident result: {}".format(result))
 
-    print(result)
-
     if result is None:
         logging.critical("Create_ident: No data from gateway")
         return None
@@ -186,4 +184,5 @@ def create_ident(ip, key, conf_obj):
         raise ReadTimeoutError
     if result["Status"] == "WriteTimeoutError":
         raise WriteTimeoutError
-    return None
+
+    return result

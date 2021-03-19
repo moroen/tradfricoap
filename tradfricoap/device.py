@@ -1,6 +1,7 @@
 import json
 from . import constants
 from . import colors
+from . import ApiNotFoundError
 from .request import request
 from .gateway import close_connection
 from .errors import (
@@ -111,6 +112,11 @@ class device:
             return "{}: {}".format(self.DeviceID, self.Name)
 
     @property
+    def Dictionary(self):
+        battery = self.Battery_level
+        return {"DeviceID": self.DeviceID, "DeviceType": self.Type, "Name": self.Name, "State": self.State, "Battery": battery if battery is not None else "N/A"}
+
+    @property
     def DeviceID(self):
         return self.device[constants.attrId]
 
@@ -143,7 +149,7 @@ class device:
         if self._is_group:
             return "Group"
 
-        return None
+        return "Other"
 
     @property
     def Raw(self):
@@ -370,21 +376,22 @@ def get_device(id, is_group=False):
 
 def get_devices(groups=False):
     from time import sleep
+    from .config import get_config
 
     devices = {}
 
     uri = constants.uriDevices
 
-    try:
-        res = request(uri)
-        res = json.loads(res)
-    except TypeError:
-        return
-    except (HandshakeError, ReadTimeoutError, WriteTimeoutError):
-        raise
-    except json.JSONDecodeError:
-        print("Unexpected result in get_devices: {}".format(res))
-        return None
+    # try:
+    res = request(uri)
+    res = json.loads(res)
+    # except TypeError:
+    #     return
+    # except (HandshakeError, ReadTimeoutError, WriteTimeoutError):
+    #     raise
+    # except json.JSONDecodeError:
+    #     print("Unexpected result in get_devices: {}".format(res))
+    #     return None
 
     # i = 0
     for aDevice in res:
@@ -410,3 +417,38 @@ def get_devices(groups=False):
 
     # close_connection()
     return devices
+
+def get_sorted_devices(groups=False):
+    try:
+        devices = get_devices(groups)
+
+        if devices is None:
+            print("Unable to get list of devices")
+        else:
+            ikea_devices = []
+            plugs = []
+            blinds = []
+            groups = []
+            batteries = []
+            others = []
+
+            devices = sorted(devices.items())
+
+            for _, dev in devices:
+                if dev.Type == "Light":
+                    ikea_devices.append(dev)
+                elif dev.Type == "Plug":
+                    plugs.append(dev)
+                elif dev.Type == "Blind":
+                    blinds.append(dev)
+                elif dev.Type == "Group":
+                    groups.append(dev)
+                else:
+                    others.append(dev)
+
+                if dev.Battery_level is not None:
+                    batteries.append(dev)
+
+            return ikea_devices, plugs, blinds, groups, others, batteries
+    except (HandshakeError, ReadTimeoutError, ApiNotFoundError):
+        raise
