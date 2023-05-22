@@ -3,7 +3,7 @@ from . import ApiNotFoundError
 
 _debug = 0
 
-CONF = get_config().configuation
+CONF = get_config().configuration
 
 if CONF["Api"] == "Py3coap":
     try:

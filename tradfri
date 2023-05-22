@@ -8,7 +8,7 @@ try:
     from tradfricoap.config import get_config, host_config, ConfigNotFoundError
 
     CONFIGFILE = "{0}/gateway.json".format(appdirs.user_config_dir(appname="tradfri"))
-    CONF = get_config(CONFIGFILE).configuation
+    CONF = get_config(CONFIGFILE).configuration
 
     if CONF["Api"] == "Coapcmd":
         from tradfricoap.coapcmd_api import set_coapcmd

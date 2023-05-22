@@ -2,7 +2,7 @@ from .config import get_config
 from . import ApiNotFoundError
 from .errors import MethodNotSupported
 
-CONF = get_config().configuation
+CONF = get_config().configuration
 
 if CONF["Api"] == "Py3coap":
     from py3coap import Observe, ObserveStop

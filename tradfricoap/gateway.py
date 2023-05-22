@@ -2,7 +2,7 @@ from .config import get_config
 from .request import request
 from .constants import attr_gateway_reboot, attr_gateway_root
 
-CONF = get_config().configuation
+CONF = get_config().configuration
 
 if CONF["Api"] == "Py3coap":
     from .pycoap_api import create_ident
