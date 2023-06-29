@@ -64,7 +64,7 @@ def request(uri, payload=None, method="put"):
             "coapcmd", "'coapcmd' not found! Looking for {}".format(_coapCMD)
         )
 
-    conf = get_config().configuation
+    conf = get_config().configuration
     path = "coaps://{}:{}/{}".format(conf["Gateway"], 5684, uri)
 
     if conf["Gateway"] is None:

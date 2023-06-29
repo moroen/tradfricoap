@@ -69,7 +69,7 @@ class host_config(object):
             self._confObj[key.capitalize().replace("-", "_")] = value
 
     @property
-    def configuation(self):
+    def configuration(self):
         return self._confObj
 
     @property

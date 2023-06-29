@@ -244,7 +244,7 @@ def set_config(args):
             print("Connection timed out")
 
     else:
-        print(json.dumps(conf_object.configuation, indent=2))
+        print(json.dumps(conf_object.configuration, indent=2))
 
 def list_devices(groups=False):
     try:

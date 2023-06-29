@@ -3,7 +3,7 @@ from . import ApiNotFoundError
 
 
 def request(uri, payload=None, method="put"):
-    CONF = get_config().configuation
+    CONF = get_config().configuration
 
     if CONF["Api"] == "Py3coap":
         try:

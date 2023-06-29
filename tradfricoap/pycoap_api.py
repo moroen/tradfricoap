@@ -39,7 +39,7 @@ def set_debug_level(level):
 
 
 def request(uri, payload=None, method="put"):
-    conf = get_config().configuation
+    conf = get_config().configuration
 
     if conf["Gateway"] is None:
         from .errors import GatewayNotSpecified
